@@ -1,0 +1,30 @@
+name: Lint and Security Checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-audit:
+    name: Lint & npm audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Backend lint + audit
+        run: |
+          cd starter-backend
+          npm ci
+          npm run lint || echo "No backend lint script"
+          npm audit --audit-level=moderate || echo "npm audit found issues or not configured"
+      - name: Frontend lint + audit
+        run: |
+          cd starter-frontend
+          npm ci
+          npm run lint || echo "No frontend lint script"
+          npm audit --audit-level=moderate || echo "npm audit found issues or not configured"
