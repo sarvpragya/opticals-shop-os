@@ -1,0 +1,44 @@
+name: Backend tests (PR)
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-tests:
+    name: Run backend tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: starter-backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Start backend
+        env:
+          PORT: 3001
+        run: |
+          node index.js &
+          sleep 2
+
+      - name: Run integration tests
+        run: |
+          npm test
+
+      - name: Run invalid-prescription tests
+        run: |
+          npm run test:invalid
+
+      - name: Stop backend
+        if: always()
+        run: |
+          pkill -f index.js || true

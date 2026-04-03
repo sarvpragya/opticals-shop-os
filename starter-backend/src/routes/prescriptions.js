@@ -15,7 +15,6 @@ router.get('/customers/:id/prescriptions', (req, res) => {
 router.post('/customers/:id/prescriptions', (req, res) => {
   const customerId = req.params.id
   const data = req.body || {}
-  console.log('[prescriptions] POST body:', JSON.stringify(data))
   const customer = db.getCustomerById(customerId)
   if (!customer) return res.status(404).json({ error: 'Customer not found' })
 
