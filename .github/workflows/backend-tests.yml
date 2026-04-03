@@ -28,7 +28,15 @@ jobs:
           PORT: 3001
         run: |
           node index.js &
-          sleep 2
+          # wait up to 30s for backend to become healthy
+          for i in $(seq 1 30); do
+            if curl --silent --fail http://localhost:3001/ >/dev/null 2>&1; then
+              echo "backend ready"
+              break
+            fi
+            echo "waiting for backend... (${i})"
+            sleep 1
+          done
 
       - name: Run integration tests
         run: |
@@ -41,4 +49,11 @@ jobs:
       - name: Stop backend
         if: always()
         run: |
-          pkill -f index.js || true
+          echo "stopping backend (attempt pkill)"
+          pkill -f "node index.js" || true
+          # also kill any process listening on port 3001
+          if command -v fuser >/dev/null 2>&1; then
+            fuser -k 3001/tcp || true
+          else
+            ss -ltnp | awk '/:3001/ { print $NF }' | awk -F'[:,]+' '{print $NF}' | xargs -r kill -9 || true
+          fi

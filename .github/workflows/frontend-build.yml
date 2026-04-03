@@ -1,0 +1,27 @@
+name: Frontend build (PR)
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  frontend-build:
+    name: Build frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: starter-frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
