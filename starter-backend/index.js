@@ -8,6 +8,7 @@ const { ensureDataFile, readDB, writeDB, addUser, findUserByUsername } = require
 
 const authRoutes = require('./src/routes/auth');
 const customerRoutes = require('./src/routes/customers');
+const prescriptionsRoutes = require('./src/routes/prescriptions');
 
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'change-this-secret';
@@ -30,6 +31,7 @@ async function main() {
   // attach routes (they will use JWT_SECRET from env)
   app.use('/auth', authRoutes({ JWT_SECRET }));
   app.use('/customers', customerRoutes({ JWT_SECRET }));
+  app.use('/', prescriptionsRoutes);
 
   // ensure admin user exists
   const db = readDB();

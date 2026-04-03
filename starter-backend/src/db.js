@@ -106,6 +106,21 @@ function isTokenBlacklisted(token) {
   return db.blacklistedTokens.some(t => t.token === token);
 }
 
+function addPrescriptionToCustomer(customerId, prescription) {
+  const db = readDB();
+  db.customers = db.customers || [];
+  const idx = db.customers.findIndex(c => c.id === customerId);
+  if (idx === -1) return null;
+  db.customers[idx].prescriptions = db.customers[idx].prescriptions || [];
+  db.customers[idx].prescriptions.push(prescription);
+  writeDB(db);
+  return prescription;
+}
+
+function generateId() {
+  return uuidv4();
+}
+
 module.exports = {
   ensureDataFile,
   readDB,
@@ -117,4 +132,6 @@ module.exports = {
   addCustomer,
   updateCustomer,
   deleteCustomer,
+  addPrescriptionToCustomer,
+  generateId,
 };
