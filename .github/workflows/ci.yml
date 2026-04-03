@@ -20,10 +20,40 @@ jobs:
         run: |
           cd starter-backend
           npm ci
-      - name: Run backend tests
+
+      - name: Start backend
         run: |
           cd starter-backend
-          npm test || echo "No backend tests configured"
+          PORT=3001 node index.js &
+          # wait up to 30s for backend
+          for i in $(seq 1 30); do
+            if curl --silent --fail http://localhost:3001/ >/dev/null 2>&1; then
+              echo "backend ready"
+              break
+            fi
+            echo "waiting for backend... (${i})"
+            sleep 1
+          done
+
+      - name: Run integration tests
+        run: |
+          cd starter-backend
+          npm test
+
+      - name: Run invalid-prescription tests
+        run: |
+          cd starter-backend
+          npm run test:invalid
+
+      - name: Stop backend
+        if: always()
+        run: |
+          pkill -f "node index.js" || true
+          if command -v fuser >/dev/null 2>&1; then
+            fuser -k 3001/tcp || true
+          else
+            ss -ltnp | awk '/:3001/ { print $NF }' | awk -F'[:,]+' '{print $NF}' | xargs -r kill -9 || true
+          fi
 
   frontend:
     name: Frontend build
