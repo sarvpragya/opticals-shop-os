@@ -132,6 +132,8 @@ module.exports = {
   addCustomer,
   updateCustomer,
   deleteCustomer,
+  addBlacklistedToken,
+  isTokenBlacklisted,
   addPrescriptionToCustomer,
   generateId,
 };
