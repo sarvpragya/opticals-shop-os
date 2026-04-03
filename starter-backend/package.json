@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node test/run-tests.js",
+    "test": "jest --runInBand --coverage",
+    "test:watch": "jest --watch",
+    "test:node": "node test/run-tests.js",
     "test:invalid": "node test/run-invalid-prescriptions.js"
   },
   "dependencies": {
@@ -13,5 +15,10 @@
     "jsonwebtoken": "^9.0.0",
     "cors": "^2.8.5",
     "uuid": "^9.0.0"
+  }
+  ,
+  "devDependencies": {
+    "jest": "29.6.1",
+    "supertest": "6.3.3"
   }
 }

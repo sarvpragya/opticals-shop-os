@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
-const DATA_PATH = path.join(__dirname, '..', 'data', 'data.json');
+const DATA_PATH = process.env.DATA_FILE || path.join(__dirname, '..', 'data', 'data.json');
 
 function ensureDataFile() {
   const dir = path.dirname(DATA_PATH);
