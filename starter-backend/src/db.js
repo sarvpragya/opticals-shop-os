@@ -137,3 +137,49 @@ module.exports = {
   addPrescriptionToCustomer,
   generateId,
 };
+
+// --- Postgres helpers (opt-in) -------------------------------------------------
+// This file retains the original file-based API for backward compatibility.
+// The helpers below let you initialize a Postgres Pool and run migrations.
+
+const { Pool } = require('pg')
+require('dotenv').config()
+
+let pgPool = null
+
+async function initPostgresPool() {
+  if (pgPool) return pgPool
+  const connectionString = process.env.DATABASE_URL
+  if (!connectionString) throw new Error('DATABASE_URL is not set')
+  pgPool = new Pool({ connectionString })
+  return pgPool
+}
+
+async function closePostgresPool() {
+  if (!pgPool) return
+  await pgPool.end()
+  pgPool = null
+}
+
+async function runMigrations() {
+  const pool = await initPostgresPool()
+  const migrationsDir = path.join(__dirname, '..', 'migrations')
+  if (!fs.existsSync(migrationsDir)) return
+  const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort()
+  for (const file of files) {
+    const id = file
+    const res = await pool.query("SELECT to_regclass('public.migrations') as exists")
+    if (!res.rows || res.rows.length === 0 || !res.rows[0].exists) {
+      // create migrations table if it doesn't exist
+      const initSql = fs.readFileSync(path.join(migrationsDir, file), 'utf8')
+      await pool.query(initSql)
+      console.log('Applied migration', file)
+      break
+    }
+  }
+}
+
+module.exports.initPostgresPool = initPostgresPool
+module.exports.closePostgresPool = closePostgresPool
+module.exports.runMigrations = runMigrations
+
