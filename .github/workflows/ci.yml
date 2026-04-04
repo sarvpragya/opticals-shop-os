@@ -13,17 +13,37 @@ jobs:
     strategy:
       matrix:
         node-version: [18, 20, 22]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          # run Node 22 only on ubuntu to reduce redundant combos
+          - node-version: 22
+            os: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+      - name: Cache backend node_modules
+        uses: actions/cache@v4
+        with:
+          path: starter-backend/node_modules
+          key: backend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('starter-backend/package-lock.json') }}
+          restore-keys: |
+            backend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}-
+            backend-node-modules-${{ runner.os }}-
       - name: Install backend dependencies
         run: |
           cd starter-backend
           npm ci
+      - name: Cache frontend node_modules
+        uses: actions/cache@v4
+        with:
+          path: starter-frontend/node_modules
+          key: frontend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('starter-frontend/package-lock.json') }}
+          restore-keys: |
+            frontend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}-
+            frontend-node-modules-${{ runner.os }}-
 
       - name: Start backend
         run: |
@@ -65,7 +85,10 @@ jobs:
     strategy:
       matrix:
         node-version: [18, 20, 22]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - node-version: 22
+            os: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
