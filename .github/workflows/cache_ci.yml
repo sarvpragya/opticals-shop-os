@@ -8,20 +8,24 @@ on:
 
 jobs:
   cache-and-install:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js 18
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: ${{ matrix.node-version }}
 
       - name: Cache backend node_modules
         uses: actions/cache@v4
         with:
           path: starter-backend/node_modules
-          key: backend-node-modules-${{ runner.os }}-${{ hashFiles('starter-backend/package-lock.json') }}
+          key: backend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('starter-backend/package-lock.json') }}
 
       - name: Install backend deps
         run: |
@@ -32,7 +36,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: starter-frontend/node_modules
-          key: frontend-node-modules-${{ runner.os }}-${{ hashFiles('starter-frontend/package-lock.json') }}
+          key: frontend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('starter-frontend/package-lock.json') }}
 
       - name: Install frontend deps
         run: |
