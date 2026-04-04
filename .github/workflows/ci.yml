@@ -32,6 +32,12 @@ jobs:
           restore-keys: |
             backend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}-
             backend-node-modules-${{ runner.os }}-
+
+      - name: Warm up backend cache (install production deps)
+        run: |
+          cd starter-backend
+          # prefer npm v7+ flag, fall back to npm ci --production
+          npm ci --omit=dev || npm ci --production || true
       - name: Install backend dependencies
         run: |
           cd starter-backend
@@ -44,6 +50,11 @@ jobs:
           restore-keys: |
             frontend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}-
             frontend-node-modules-${{ runner.os }}-
+
+      - name: Warm up frontend cache (install production deps)
+        run: |
+          cd starter-frontend
+          npm ci --omit=dev || npm ci --production || true
 
       - name: Start backend
         run: |
