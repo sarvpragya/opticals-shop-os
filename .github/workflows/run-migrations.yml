@@ -1,7 +1,12 @@
 name: Run DB Migrations
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Set to "true" to apply migrations; otherwise show summary only'
+        required: false
+        default: 'false'
   push:
     branches: [ main ]
 
@@ -21,7 +26,8 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Ensure DATABASE_URL is provided
+      - name: Ensure DATABASE_URL is provided (only when applying)
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.apply == 'true')
         run: |
           if [ -z "${{ secrets.DATABASE_URL }}" ]; then
             echo "DATABASE_URL secret is not set. Failing migration job to avoid accidental runs."
@@ -31,7 +37,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Show migration summary
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run migrate -- --summary || true
+
       - name: Run migrations
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.apply == 'true')
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run migrate
