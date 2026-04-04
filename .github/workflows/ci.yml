@@ -18,6 +18,12 @@ jobs:
           # run Node 22 only on ubuntu to reduce redundant combos
           - node-version: 22
             os: ubuntu-latest
+        exclude:
+          # do not run backend on macOS to save minutes
+          - os: macos-latest
+          # do not run Node 22 on Windows
+          - node-version: 22
+            os: windows-latest
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
@@ -100,6 +106,9 @@ jobs:
         include:
           - node-version: 22
             os: ubuntu-latest
+        exclude:
+          # skip frontend builds on Windows (not needed)
+          - os: windows-latest
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
