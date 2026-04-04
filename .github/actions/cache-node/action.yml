@@ -1,0 +1,24 @@
+name: "cache-node-modules"
+description: "Composite action to cache node_modules using a configurable key"
+inputs:
+  path:
+    description: 'Path to cache (relative to repo root)'
+    required: true
+  lockfile:
+    description: 'Path to lockfile to hash for key (relative to repo root)'
+    required: true
+  key_prefix:
+    description: 'Prefix to use for cache key (should include runner/os and node version tokens)'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Restore / Save cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.path }}
+        key: ${{ inputs.key_prefix }}-${{ hashFiles(inputs.lockfile) }}
+        restore-keys: |
+          ${{ inputs.key_prefix }}-
+          ${{ runner.os }}-

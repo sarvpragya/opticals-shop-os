@@ -12,17 +12,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [18, 20, 22]
-        os: [ubuntu-latest, macos-latest, windows-latest]
         include:
-          # run Node 22 only on ubuntu to reduce redundant combos
+          - node-version: 18
+            os: ubuntu-latest
+          - node-version: 20
+            os: ubuntu-latest
           - node-version: 22
             os: ubuntu-latest
-        exclude:
-          # do not run backend on macOS to save minutes
-          - os: macos-latest
-          # do not run Node 22 on Windows
-          - node-version: 22
+          - node-version: 18
+            os: windows-latest
+          - node-version: 20
             os: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,13 +30,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Cache backend node_modules
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-node
         with:
           path: starter-backend/node_modules
-          key: backend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('starter-backend/package-lock.json') }}
-          restore-keys: |
-            backend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}-
-            backend-node-modules-${{ runner.os }}-
+          lockfile: starter-backend/package-lock.json
+          key_prefix: backend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}
 
       - name: Warm up backend cache (install production deps)
         run: |
@@ -49,13 +46,11 @@ jobs:
           cd starter-backend
           npm ci
       - name: Cache frontend node_modules
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-node
         with:
           path: starter-frontend/node_modules
-          key: frontend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('starter-frontend/package-lock.json') }}
-          restore-keys: |
-            frontend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}-
-            frontend-node-modules-${{ runner.os }}-
+          lockfile: starter-frontend/package-lock.json
+          key_prefix: frontend-node-modules-${{ runner.os }}-node-${{ matrix.node-version }}
 
       - name: Warm up frontend cache (install production deps)
         run: |
@@ -101,14 +96,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [18, 20, 22]
-        os: [ubuntu-latest, macos-latest, windows-latest]
         include:
+          - node-version: 18
+            os: ubuntu-latest
+          - node-version: 20
+            os: ubuntu-latest
           - node-version: 22
             os: ubuntu-latest
-        exclude:
-          # skip frontend builds on Windows (not needed)
-          - os: windows-latest
+          - node-version: 18
+            os: macos-latest
+          - node-version: 20
+            os: macos-latest
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
